@@ -13,7 +13,8 @@ The library uses the builtin Haskell compiler extension in the form of *QuasiQuo
 
 import Marvin.Interpolate
 
-myStr = [i|some string %{show $ map f [1,2,3]} and data |]
+myStr = [i|some string %{show $ map succ [1,2,3]} and data |]
+-- "some string [2,3,4] and data"
 ```
 
 It basically transforms the interpolated string, which is anything between `[i|` and `|]` into a concatenation of all string bits and the expressions in `%{}`.
@@ -48,8 +49,35 @@ There are three escape sequences to allow literal `%{` and `|]`
 
 | Input | Output |
 |-------|--------|
-| `\%`  | `%`    |
 | `\]`  | `]`    |
 | `\\`  | `\\`   |
+| `\%`  | `%` (only outside `%{}`) |
+| `\}`  | `}` (only inside `%{}`) | 
+
 
 As a result the sequence `\%{` will show up as a literal `%{` in the output and `|\]` results in a literal `|]`.
+
+
+## Differences to/Advantages over other libraries
+
+There are a few advantages this libary has over other string formatting options.
+
+1. **The hard work happens at compile time**
+
+    Unlike libraries like [text-format](https://hackage.haskell.org/package/text-format) and the [`Text.Printf`](https://www.stackage.org/haddock/lts-7.14/base-4.9.0.0/Text-Printf.html) module parsing the format string, producing the string fragments and interleaving data and strings happens all at compile time.
+    At runtime a single fusable string concatenation expression is produced.  
+    Furthermore all errors, like missing identifiers happen at compile time, not at runtime.
+
+2. **Type Polymorphism**
+    
+    The created, interpolated string has no type. 
+    It can be interpreted as any string type, so long as there is an [`IsString`](https://www.stackage.org/haddock/lts-7.14/base-4.9.0.0/Data-String.html#t:IsString) instance and the expressions inside return the appropriate type.
+
+    This is different format string libraries like [text-format](https://hackage.haskell.org/package/text-format) and the [`Text.Printf`](https://www.stackage.org/haddock/lts-7.14/base-4.9.0.0/Text-Printf.html) module which always produce strings of a particular type, and interpolation libraries like [interpolate](http://hackage.haskell.org/package/interpolate) and [interpol](http://hackage.haskell.org/package/interpol) which require instances of `Show`.
+
+3. **Simple API and full Haskell support**
+
+    The interpolated expressions are just plain Haskell expressions, no extra syntax, beyond the interpolation braces `%{}`.
+    Also all Haskell expressions, including infix expressions, are fully supported.
+
+    This is different from [Interpolation](http://hackage.haskell.org/package/Interpolation) which introduces additional syntax and does not fully support infix expressions.
