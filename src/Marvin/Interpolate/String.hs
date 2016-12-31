@@ -12,25 +12,26 @@ import           Util
 import Data.List
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as L
+import Data.Monoid
 
 
-class ShowS a where
-    showS :: a -> String
-    showListS :: [a] -> String
-    showListS l = "[" <> intercalate ", " (map showS l) <> "]"
+class ShowStr a where
+    showStr :: a -> String
+    showListStr :: [a] -> String
+    showListStr l = "[" <> intercalate ", " (map showStr l) <> "]"
 
-instance ShowS Char where
-    showS = show
-    showListT = id
+instance ShowStr Char where
+    showStr = show
+    showListStr = id
 
-instance ShowS Text where
-    showS = T.unpack
+instance ShowStr T.Text where
+    showStr = T.unpack
 
-instance ShowS L.Text where
-    showS = L.unpack
+instance ShowStr L.Text where
+    showStr = L.unpack
 
-instance {-# OVERLAPPABLE #-} Show a => ShowS a where
-    showS = show
+instance {-# OVERLAPPABLE #-} Show a => ShowStr a where
+    showStr = show
 
 
 iS :: QuasiQuoter

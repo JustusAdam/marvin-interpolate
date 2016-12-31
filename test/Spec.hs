@@ -1,13 +1,25 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 
-import           Marvin.Interpolate
+import           Marvin.Interpolate.All
 import           Test.Hspec
 
 
 formatSpec :: Spec
-formatSpec =
-    describe "marvin interpolation" $ do
+formatSpec = do
+    describe "escape sequences" $ do
+        it "parses \\\\ as \\" $ 
+            [i|\\|] `shouldBe` "\\"
+        it "parses \\% as %" $ 
+            [i|\%|] `shouldBe` "%"
+        it "parses \\] as ]" $ 
+            [i|\]|] `shouldBe` "]"
+        it "parses \\%{} as %{}" $
+            [i|\%{}|] `shouldBe` "%{}"
+        it "parses |\\] as |]" $
+            [i||\]|] `shouldBe` "|]"
+
+    describe "interpolation substitution" $ do
         it "leaves an empty string" $
             [i||] `shouldBe` ""
         it "returns a string unchanged if no variable is in it" $

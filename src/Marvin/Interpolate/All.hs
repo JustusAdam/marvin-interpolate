@@ -1,5 +1,8 @@
 module Marvin.Interpolate.All
-    ( i, iS, iT, iLT
+    ( module Marvin.Interpolate
+    , module Marvin.Interpolate.String
+    , module Marvin.Interpolate.Text
+    , module Marvin.Interpolate.Text.Lazy
     ) where
 
 

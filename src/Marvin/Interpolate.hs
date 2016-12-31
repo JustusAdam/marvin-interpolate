@@ -1,6 +1,9 @@
 {-# LANGUAGE MultiWayIf      #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Marvin.Interpolate where
+module Marvin.Interpolate
+  ( interpolateInto
+  , i
+  ) where
 
 
 import           Control.Monad
