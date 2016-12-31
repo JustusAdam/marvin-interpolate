@@ -45,8 +45,10 @@ parseTillEscape endChar allowEOF = do
         char '\\'
         next <- anyChar
         let escaped
-                | next == '\\' = "\\" ++ [next]
+                | next == '\\' = "\\"
+                | next == ']' = "]"
                 | next == endChar = [endChar]
+                | otherwise = "\\" ++ [next]
         rest <- parseTillEscape endChar allowEOF
         return $ escaped <> rest
 
