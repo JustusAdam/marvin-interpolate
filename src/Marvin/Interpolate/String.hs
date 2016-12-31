@@ -5,14 +5,14 @@
 module Marvin.Interpolate.String where
 
 
+import           Data.List
+import           Data.Monoid
+import qualified Data.Text                 as T
+import qualified Data.Text.Lazy            as L
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Quote
 import           Marvin.Interpolate
 import           Util
-import Data.List
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as L
-import Data.Monoid
 
 
 class ShowStr a where

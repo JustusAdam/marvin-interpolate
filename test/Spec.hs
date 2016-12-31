@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 
+import           Data.List              (intercalate)
 import           Marvin.Interpolate.All
 import           Test.Hspec
 
@@ -8,11 +9,11 @@ import           Test.Hspec
 formatSpec :: Spec
 formatSpec = do
     describe "escape sequences" $ do
-        it "parses \\\\ as \\" $ 
+        it "parses \\\\ as \\" $
             [i|\\|] `shouldBe` "\\"
-        it "parses \\% as %" $ 
+        it "parses \\% as %" $
             [i|\%|] `shouldBe` "%"
-        it "parses \\] as ]" $ 
+        it "parses \\] as ]" $
             [i|\]|] `shouldBe` "]"
         it "parses \\%{} as %{}" $
             [i|\%{}|] `shouldBe` "%{}"
@@ -33,7 +34,20 @@ formatSpec = do
             let x = "str" in [i| hello x: %{x}|] `shouldBe` " hello x: " ++ x
         it "interpolates infix with $" $
             [i|str %{show $ 4 + (5 :: Int)} str|] `shouldBe` "str 9 str"
+        it "interpolates multiple bindings" $
+            let
+                x = "multiple"
+                y = "can"
+                z = "local scope"
+            in [i|We %{y} interpolate %{x} bindings from %{z}|]
+                `shouldBe` "We can interpolate multiple bindings from local scope"
 
+        it "interpolates complex expressions" $
+            let
+                x = ["haskell", "expression"]
+                y = " can be"
+            in [i|Any %{intercalate " " x ++ y} interpolated|]
+                 `shouldBe` "Any haskell expression can be interpolated"
 
 main :: IO ()
 main = hspec formatSpec

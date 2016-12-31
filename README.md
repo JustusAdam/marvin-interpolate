@@ -6,7 +6,7 @@
 This string interpolation library originates from the [Marvin project](https://github.com/JustusAdam/marvin) where, in an attempt to make it easy for the user to write text with some generated data in it, I developed this string interpolation library.
 The design is very similar to the string interpolation in Scala and CoffeeScript, in that the hard work happens at compile time (no parsing overhead at runtime) and any valid Haskell expression can be interpolated.
 
-The library uses the builtin Haskell compiler extension in the form of *QuasiQuoters* (`QuasiQuotes` language extension).
+The library uses the builtin Haskell compiler extension in the form of *QuasiQuoters* ([`QuasiQuotes`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell-quasi-quotation) language extension).
 
 ```haskell
 {-# LANGUAGE QuasiQuotes #-}
@@ -17,7 +17,7 @@ myStr = [i|some string %{show $ map f [1,2,3]} and data |]
 ```
 
 It basically transforms the interpolated string, which is anything between `[i|` and `|]` into a concatenation of all string bits and the expressions in `%{}`.
-Therefore it is not limited to `String` alone, rather it produces a literal at compile time, which can either be interpreted as `String` or, using the `OverloadedStrings` extension as `Text` or `ByteString` or any other string type.
+Therefore it is not limited to `String` alone, rather it produces a literal at compile time, which can either be interpreted as `String` or, using the [`OverloadedStrings`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#overloaded-string-literals) extension, as `Text` or `ByteString` or any other string type.
 
 `i` is the basic interpolator, which inserts the expressions verbatim. Hence when using `i` all expressions must return the desired string type.
 
