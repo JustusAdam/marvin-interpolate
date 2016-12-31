@@ -1,5 +1,8 @@
 # Simple string interpolation
 
+[![Travis](https://travis-ci.org/JustusAdam/marvin-interpolate.svg?branch=master)](https://travis-ci.org/JustusAdam/marvin-interpolate)
+[![Hackage](https://img.shields.io/hackage/v/marvin-interpolate.svg)](http://hackage.haskell.org/package/marvin-interpolate)
+
 This string interpolation library originates from the [Marvin project](https://github.com/JustusAdam/marvin) where, in an attempt to make it easy for the user to write text with some generated data in it, I developed this string interpolation library.
 The design is very similar to the string interpolation in Scala and CoffeeScript, in that the hard work happens at compile time (no parsing overhead at runtime) and any valid Haskell expression can be interpolated.
 

@@ -1,0 +1,32 @@
+sudo: false
+
+language: c
+
+cache:
+  directories:
+  - $HOME/.stack
+
+addons:
+  apt:
+    packages:
+    - g++ 
+    - gcc
+    - libc6-dev
+    - libffi-dev
+    - libgmp-dev
+    - make
+    - xz-utils
+    - zlib1g-dev
+    - git
+    - gnupg
+
+before_install:
+# Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+- stack setup
+
+script:
+- stack install
+- stack test
