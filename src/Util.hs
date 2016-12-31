@@ -1,11 +1,11 @@
 module Util where
 
 
-import Language.Haskell.TH.Quote
+import           Language.Haskell.TH.Quote
 
 
 mqq :: QuasiQuoter
-mqq = QuasiQuoter 
+mqq = QuasiQuoter
     { quotePat = error "Interpolation cannot occur in pattern"
     , quoteType = error "Interpolation cannot occur in type"
     , quoteDec = error "Interpolation cannot occur in declaration"

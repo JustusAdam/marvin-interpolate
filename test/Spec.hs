@@ -1,12 +1,12 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 
-import Test.Hspec
-import Marvin.Interpolate
+import           Marvin.Interpolate
+import           Test.Hspec
 
 
 formatSpec :: Spec
-formatSpec = 
+formatSpec =
     describe "marvin interpolation" $ do
         it "leaves an empty string" $
             [i||] `shouldBe` ""

@@ -1,18 +1,18 @@
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE MultiWayIf      #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Marvin.Interpolate where
 
 
-import Text.Parsec
-import Control.Monad
-import Data.Monoid
-import Language.Haskell.TH
-import Language.Haskell.Meta.Parse.Careful
-import Control.Monad.State as S
-import Data.List (intercalate)
-import Data.Either
-import Language.Haskell.TH.Quote
-import Util
+import           Control.Monad
+import           Control.Monad.State                 as S
+import           Data.Either
+import           Data.List                           (intercalate)
+import           Data.Monoid
+import           Language.Haskell.Meta.Parse.Careful
+import           Language.Haskell.TH
+import           Language.Haskell.TH.Quote
+import           Text.Parsec
+import           Util
 
 
 type Parsed = [Either String String]
@@ -28,7 +28,7 @@ parseInterpolation :: Parsec String () (Either String String)
 parseInterpolation = Left <$> between (string "%{") (char '}') (parseTillEscape '}' False)
 
 parseTillEscape :: Char -> Bool -> Parsec String () String
-parseTillEscape endChar allowEOF = do 
+parseTillEscape endChar allowEOF = do
     chunk <- many $ noneOf ['\\', endChar]
     rest <- eofEND <|> (lookAhead (try anyChar) >>= restEND)
     return $ chunk <> rest
@@ -36,7 +36,7 @@ parseTillEscape endChar allowEOF = do
     eofEND
         | allowEOF = eof >> return ""
         | otherwise = fail "EOF not allowed in interpolation"
-    
+
     restEND c
         | c == '\\' = parseEscaped
         | c == endChar = return ""
@@ -44,7 +44,7 @@ parseTillEscape endChar allowEOF = do
     parseEscaped = do
         char '\\'
         next <- anyChar
-        let escaped 
+        let escaped
                 | next == '\\' = "\\" ++ [next]
                 | next == endChar = [endChar]
         rest <- parseTillEscape endChar allowEOF
@@ -77,7 +77,7 @@ interpolateInto converter str =
 
     f expr bit = AppE (VarE 'mappend) expr `AppE` bitExpr
       where
-        bitExpr = case bit of 
+        bitExpr = case bit of
                       Right str -> LitE (StringL str)
                       Left expr2 -> AppE converter expr2
 

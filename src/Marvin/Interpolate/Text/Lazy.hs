@@ -1,17 +1,17 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Marvin.Interpolate.Text.Lazy where
 
 
-import Marvin.Interpolate
-import Util
-import Language.Haskell.TH.Quote
-import Language.Haskell.TH
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as L
-import Data.Monoid
+import           Data.Monoid
+import qualified Data.Text                 as T
+import qualified Data.Text.Lazy            as L
+import           Language.Haskell.TH
+import           Language.Haskell.TH.Quote
+import           Marvin.Interpolate
+import           Util
 
 
 class ShowLT a where
