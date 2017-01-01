@@ -1,10 +1,20 @@
-{-# LANGUAGE BangPatterns    #-}
-{-# LANGUAGE MultiWayIf      #-}
+{-|
+Module      : $Header$
+Description : Interpolation core module
+Copyright   : (c) Justus Adam, 2016
+License     : BSD3
+Maintainer  : dev@justus.science
+Stability   : experimental
+Portability : POSIX
+
+Please refer to the documentation at https://marvin.readthedocs.io/en/latest/interpolation.html for examples and explanations on how to use this library.
+-}
 {-# LANGUAGE TemplateHaskell #-}
 module Marvin.Interpolate
-  ( interpolateInto
-  , is
-  , i
+  ( is
+  , iq
+  -- * Internals/extension points
+  , interpolateInto
   ) where
 
 
@@ -39,7 +49,7 @@ parseInterpolation = Left <$> between (try $ string "%{") (char '}') (parseTillE
 parseTillEscape :: String -> Bool -> Parsec String () String
 parseTillEscape endSeq@(endChar:_) allowEOF = do
     chunk <- many $ noneOf [escapeChar, endChar]
-    !rest <- eofEND
+    rest <- eofEND
               <|> (char escapeChar >> parseEscaped)
               <|> (lookAhead (try $ string endSeq) >> return "")
               <|> (return <$> char endChar)
@@ -77,6 +87,17 @@ evalExprs l = evalState (mapM stitch l) decls
         return $ Left name
 
 
+-- | Common core of all interpolators.
+--
+-- @interpolateInto exp str@ parses @str@ as the interpolated string and returns an 'Exp' which looks like 
+-- 
+-- @
+--    "str" \`mappend\` exp1 \`mappend\` "str" \`mappend\` exp2 \`mappend\` "str"
+-- @ 
+-- 
+-- where @exp1@ and @exp2@ are the interpolated expressions with @exp@ prepended.
+-- The intended use of @exp@ is to unifomly convert the interpolated expressions into a desired string type.
+-- Typically @exp@ will be something like @('VarE' \'convert)@ were @convert@ is some member function of a conversion type class.
 interpolateInto :: Exp -> String -> Exp
 interpolateInto converter str =
     foldl f (LitE (StringL "")) interleaved
@@ -91,10 +112,19 @@ interpolateInto converter str =
                       Right str -> LitE (StringL str)
                       Left expr2 -> AppE converter expr2
 
-
+-- | __i__nterpolate __s__plice 
+--
+-- Template Haskell splice function, used like @$(is "my str %{expr}")@
+-- 
+-- Performs no conversion on interpolated expressions like @expr@.
 is :: String -> Q Exp
 is = return . interpolateInto (VarE 'id)
 
 
-i :: QuasiQuoter
-i = mqq { quoteExp = is }
+-- | __i__nterpolate __q__uoter
+--
+-- QuasiQuoter, used like @[i|my str %{expr}|]@
+--
+-- Performs no conversion on interpolated expressions like @expr@.
+iq :: QuasiQuoter
+iq = mqq { quoteExp = is }
