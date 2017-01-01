@@ -6,7 +6,7 @@
 This string interpolation library originates from the [Marvin project](https://github.com/JustusAdam/marvin) where, in an attempt to make it easy for the user to write text with some generated data in it, I developed this string interpolation library.
 The design is very similar to the string interpolation in Scala and CoffeeScript, in that the hard work happens at compile time (no parsing overhead at runtime) and any valid Haskell expression can be interpolated.
 
-The library uses the builtin Haskell compiler extension in the form of *QuasiQuoters* ([`QuasiQuotes`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell-quasi-quotation) language extension) and *splices* ([`Template Haskell`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell) language extension)
+The library uses the builtin Haskell compiler extension in the form of *QuasiQuoters* ([`QuasiQuotes`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell-quasi-quotation) language extension) and/or *splices* ([`Template Haskell`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell) language extension)
 
 ```haskell
 {-# LANGUAGE QuasiQuotes #-}
