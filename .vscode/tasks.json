@@ -8,7 +8,7 @@
     "showOutput": "always",
     "tasks": [
         {
-            "taskName": "build",
+            "taskName": "test",
             "isBuildCommand": true
         }
         // ,

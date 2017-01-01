@@ -49,13 +49,12 @@ There are three escape sequences to allow literal `%{` and `|]`
 
 | Input | Output |
 |-------|--------|
-| `\]`  | `]`    |
-| `\\`  | `\\`   |
-| `\%`  | `%` (only outside `%{}`) |
-| `\}`  | `}` (only inside `%{}`) | 
+| `%]`  | `]`    |
+| `%%`  | `%`    |
+| `%}`  | `}`    | 
 
 
-As a result the sequence `\%{` will show up as a literal `%{` in the output and `|\]` results in a literal `|]`.
+As a result the sequence `%%{` will show up as a literal `%{` in the output and `|%]` results in a literal `|]`.
 
 
 ## Differences to/Advantages over other libraries

@@ -1,4 +1,5 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes     #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 
 import           Data.List              (intercalate)
@@ -8,17 +9,27 @@ import           Test.Hspec
 
 formatSpec :: Spec
 formatSpec = do
-    describe "escape sequences" $ do
-        it "parses \\\\ as \\" $
-            [i|\\|] `shouldBe` "\\"
-        it "parses \\% as %" $
-            [i|\%|] `shouldBe` "%"
-        it "parses \\] as ]" $
-            [i|\]|] `shouldBe` "]"
-        it "parses \\%{} as %{}" $
-            [i|\%{}|] `shouldBe` "%{}"
-        it "parses |\\] as |]" $
-            [i||\]|] `shouldBe` "|]"
+    describe "parsing to itself" $ do
+        it "%" $
+            [i|%|] `shouldBe` "%"
+        it "%anything" $
+            [i|%anything|] `shouldBe` "%anything"
+        it "~" $
+            [i|~|] `shouldBe` "~"
+        it "~anything" $
+            $(is "~anything") `shouldBe` "~anything"
+
+    describe "parsing escape sequences" $ do
+        it "parses ~% as %" $
+            [i|~%|] `shouldBe` "%"
+        it "parses ~] as ]" $
+            [i|~]|] `shouldBe` "]"
+        it "parses ~%{} as %{}" $
+            [i|~%{}|] `shouldBe` "%{}"
+        it "parses |~] as |]" $
+            [i||~]|] `shouldBe` "|]"
+        it "parses ~~ as ~" $
+            [i|~~|] `shouldBe` "~"
 
     describe "interpolation substitution" $ do
         it "leaves an empty string" $
@@ -48,6 +59,12 @@ formatSpec = do
                 y = " can be"
             in [i|Any %{intercalate " " x ++ y} interpolated|]
                  `shouldBe` "Any haskell expression can be interpolated"
+
+
+    describe "splice interpolation" $
+        it "interpolates a splice" $
+            let x = 5 in $(isS "%{x}") `shouldBe` "5"
+
 
 main :: IO ()
 main = hspec formatSpec

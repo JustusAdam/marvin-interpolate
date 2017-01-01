@@ -1,7 +1,9 @@
+{-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE MultiWayIf      #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Marvin.Interpolate
   ( interpolateInto
+  , is
   , i
   ) where
 
@@ -21,38 +23,41 @@ import           Util
 type Parsed = [Either String String]
 
 
+escapeChar :: Char
+escapeChar = '~'
+
+
 parser :: Parsec String () Parsed
 parser = manyTill (parseInterpolation <|> parseString) eof
 
 parseString :: Parsec String () (Either String String)
-parseString = Right <$> parseTillEscape '%' True
+parseString = Right <$> parseTillEscape "%{" True
 
 parseInterpolation :: Parsec String () (Either String String)
-parseInterpolation = Left <$> between (string "%{") (char '}') (parseTillEscape '}' False)
+parseInterpolation = Left <$> between (try $ string "%{") (char '}') (parseTillEscape "}" False)
 
-parseTillEscape :: Char -> Bool -> Parsec String () String
-parseTillEscape endChar allowEOF = do
-    chunk <- many $ noneOf ['\\', endChar]
-    rest <- eofEND <|> (lookAhead (try anyChar) >>= restEND)
+parseTillEscape :: String -> Bool -> Parsec String () String
+parseTillEscape endSeq@(endChar:_) allowEOF = do
+    chunk <- many $ noneOf [escapeChar, endChar]
+    !rest <- eofEND
+              <|> (char escapeChar >> parseEscaped)
+              <|> (lookAhead (try $ string endSeq) >> return "")
+              <|> (return <$> char endChar)
     return $ chunk <> rest
   where
     eofEND
-        | allowEOF = eof >> return ""
+        | allowEOF = eof >> return "" -- <|> (try (char escapeChar >> eof) >> char escapeChar >> return [escapeChar])
         | otherwise = fail "EOF not allowed in interpolation"
 
-    restEND c
-        | c == '\\' = parseEscaped
-        | c == endChar = return ""
-
-    parseEscaped = do
-        char '\\'
+    parseEscaped = (eof >> return [escapeChar]) <|> do
         next <- anyChar
         let escaped
-                | next == '\\' = "\\"
+                | next == escapeChar = [escapeChar]
+                | next == '%' = "%"
                 | next == ']' = "]"
-                | next == endChar = [endChar]
-                | otherwise = "\\" ++ [next]
-        rest <- parseTillEscape endChar allowEOF
+                | next == '}' = "}"
+                | otherwise = escapeChar : [next]
+        rest <- parseTillEscape endSeq allowEOF
         return $ escaped <> rest
 
 
@@ -87,5 +92,9 @@ interpolateInto converter str =
                       Left expr2 -> AppE converter expr2
 
 
+is :: String -> Q Exp
+is = return . interpolateInto (VarE 'id)
+
+
 i :: QuasiQuoter
-i = mqq { quoteExp = return . interpolateInto (VarE 'id) }
+i = mqq { quoteExp = is }

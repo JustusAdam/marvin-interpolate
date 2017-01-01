@@ -33,5 +33,9 @@ instance {-# OVERLAPPABLE #-} Show a => ShowLT a where
     showLT = L.pack . show
 
 
+isLT :: String -> Q Exp
+isLT = return . interpolateInto (VarE 'showLT)
+
+
 iLT :: QuasiQuoter
-iLT = mqq { quoteExp = return . interpolateInto (VarE 'showLT) }
+iLT = mqq { quoteExp = isLT }
