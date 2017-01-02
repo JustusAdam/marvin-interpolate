@@ -14,9 +14,9 @@ Please refer to the documentation at https://marvin.readthedocs.io/en/latest/int
 {-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Marvin.Interpolate.Text.Lazy
-    ( isLT, iqLT
+    ( isL, iqL
     -- * Conversion class
-    , ShowLT(..)
+    , ShowL(..)
     ) where
 
 
@@ -32,38 +32,38 @@ import           Util
 -- | A type class for converting things to 'L.Text'
 --
 -- Leaves string likes ('String', 'T.Text' and 'L.Text') unchanged, tries 'Show' (overlappable) on all others.
-class ShowLT a where
-    showLT :: a -> L.Text
-    showListLT :: [a] -> L.Text
-    showListLT l = "[" <> L.intercalate ", " (map showLT l) <> "]"
+class ShowL a where
+    showL :: a -> L.Text
+    showListL :: [a] -> L.Text
+    showListL l = "[" <> L.intercalate ", " (map showL l) <> "]"
 
-instance ShowLT L.Text where
-    showLT = id
+instance ShowL L.Text where
+    showL = id
 
-instance ShowLT T.Text where
-    showLT = L.fromStrict
+instance ShowL T.Text where
+    showL = L.fromStrict
 
-instance ShowLT Char where
-    showLT = L.pack . show
-    showListLT = L.pack
+instance ShowL Char where
+    showL = L.pack . show
+    showListL = L.pack
 
-instance {-# OVERLAPPABLE #-} Show a => ShowLT a where
-    showLT = L.pack . show
+instance {-# OVERLAPPABLE #-} Show a => ShowL a where
+    showL = L.pack . show
 
 
--- | __i__nterpolate __s__plice to __L__azy __T__ext
+-- | __i__nterpolate __s__plice to __L__azy Text
 --
 -- Template Haskell splice function, used like @$(isLT "my str %{expr}")@
 -- 
--- converts all expressions to 'L.Text' by calling 'showLT' on the result.
-isLT :: String -> Q Exp
-isLT = return . interpolateInto (VarE 'showLT)
+-- converts all expressions to 'L.Text' by calling 'showL' on the result.
+isL :: String -> Q Exp
+isL = return . interpolateInto (VarE 'showL)
 
 
--- | __i__nterpolate __q__uoter to __L__azy __T__ext
+-- | __i__nterpolate __q__uoter to __L__azy Text
 --
 -- QuasiQuoter, used like @[iLT|my str %{expr}|]@
 --
--- converts all expressions to 'L.Text' by calling 'showLT' on the result.
-iqLT :: QuasiQuoter
-iqLT = mqq { quoteExp = isLT }
+-- converts all expressions to 'L.Text' by calling 'showL' on the result.
+iqL :: QuasiQuoter
+iqL = mqq { quoteExp = isL }

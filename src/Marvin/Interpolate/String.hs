@@ -58,7 +58,7 @@ instance {-# OVERLAPPABLE #-} Show a => ShowStr a where
 -- 
 -- converts all expressions to 'String' by calling 'showStr' on the result.
 isS :: String -> Q Exp
-isS = return . interpolateInto (VarE 'show)
+isS = return . interpolateInto (VarE 'showStr)
 
 
 -- | __i__nterpolate __q__uoter to __S__tring

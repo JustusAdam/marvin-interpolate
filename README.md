@@ -3,6 +3,8 @@
 [![Travis](https://travis-ci.org/JustusAdam/marvin-interpolate.svg?branch=master)](https://travis-ci.org/JustusAdam/marvin-interpolate)
 [![Hackage](https://img.shields.io/hackage/v/marvin-interpolate.svg)](http://hackage.haskell.org/package/marvin-interpolate)
 
+You can find the proper documentation for this library as part of the marvin docs on [readthedocs](https://marvin.readthedocs.org/en/latest/interpolation.html), the following readme provides a shortened overview.
+
 This string interpolation library originates from the [Marvin project](https://github.com/JustusAdam/marvin) where, in an attempt to make it easy for the user to write text with some generated data in it, I developed this string interpolation library.
 The design is very similar to the string interpolation in Scala and CoffeeScript, in that the hard work happens at compile time (no parsing overhead at runtime) and any valid Haskell expression can be interpolated.
 
@@ -13,7 +15,7 @@ The library uses the builtin Haskell compiler extension in the form of *QuasiQuo
 
 import Marvin.Interpolate
 
-myStr = [i|some string %{show $ map succ [1,2,3]} and data |]
+myStr = [iq|some string %{show $ map succ [1,2,3]} and data |]
 -- "some string [2,3,4] and data"
 ```
 
@@ -28,27 +30,27 @@ myStr = $(is "some string %{show $ map succ [1,2,3]} and data")
 -- "some string [2,3,4] and data"
 ```
 
-It basically transforms the interpolated string  `[i|interpolated string|]`, or in splices `$(is "interpolated string")` into a concatenation of all string bits and the expressions in `%{}`.
+It basically transforms the interpolated string  `[iq|interpolated string|]`, or in splices `$(is "interpolated string")` into a concatenation of all string bits and the expressions in `%{}`.
 Therefore it is not limited to `String` alone, rather it produces a literal at compile time, which can either be interpreted as `String` or, using the [`OverloadedStrings`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#overloaded-string-literals) extension, as `Text` or `ByteString` or any other string type.
 
-`i` (for *interpolate*) and `is` (for *interpolate splice*) is the basic interpolator, which inserts the expressions verbatim. Hence when using `i` or `is` all expressions must return the desired string type.
+`i` (for *interpolate quoter*) and `is` (for *interpolate splice*) is the basic interpolator, which inserts the expressions verbatim. Hence when using `iq` or `is` all expressions must return the desired string type.
 
 There are specialized interpolators, which also perform automatic conversion of non-string types into the desired string type.
 These specialized interpolators each have an associated typeclass, which converts string types (`String`, `Text` and lazy `Text`) to the target type, but leaves the contents unchanged and calls `show` on all other types before converting.
 This last instance, which is based on `Show`, can be overlapped by specifying a custom instance for your type, allowing the user to define the conversion.
 
-The naming scheme of the interpolators in general is `i<splice?><pecialization?>`.
-I. e. `isS` expands to *interpolate splice to String* and `iLT` to *interpolate to Lazy Text*.
+The naming scheme of the interpolators in general is `i<splice|quoter><specialization?>`.
+I. e. `isS` expands to *interpolate splice to String* and `iqL` to *interpolate quoter to Lazy Text*.
 
-- `iS` and `isS` in `Marvin.Interpolate.String` converts to `String` via the `ShowS` typeclass
-- `iT` and `isT` in `Marvin.Interpolate.Text` converts to `Text` via the `ShowT` typeclass
-- `iLT` and `isLT` in `Marvin.Interpolate.Text.Lazy` converts to lazy `Text` via the `ShowLT` typeclass
+- `iqS` and `isS` in `Marvin.Interpolate.String` converts to `String` via the `ShowS` typeclass
+- `iqT` and `isT` in `Marvin.Interpolate.Text` converts to `Text` via the `ShowT` typeclass
+- `iqL` and `isL` in `Marvin.Interpolate.Text.Lazy` converts to lazy `Text` via the `ShowLT` typeclass
 
 To import all interpolators, import `Marvin.Interpolate.All`.
 
 ## Syntax
 
-Interpolation uses the quasi quoter sytax, which starts with `[interpolator_name|` and ends with `|]`.
+Interpolation uses the quasi quoter sytax, which starts with `[interpolator_name|` and ends with `|]` or splice syntax `$(interpolator "interpolated string")`.
 Anything in between is interpreted by the library.
 
 The format string in between uses the syntax `%{expression}`.

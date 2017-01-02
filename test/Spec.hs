@@ -1,14 +1,32 @@
 {-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 
 import           Data.List              (intercalate)
 import           Marvin.Interpolate.All
 import           Test.Hspec
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as L
 
 
-formatSpec :: Spec
-formatSpec = do
+data G = G
+
+instance Show G where
+    show _ = "show"
+
+instance ShowStr G where
+    showStr _ = "showStr"
+
+instance ShowT G where
+    showT _ = "showT"
+
+instance ShowL G where
+    showL _ = "showL"
+
+
+main :: IO ()
+main = hspec $ do
     describe "parsing to itself" $ do
         it "%" $
             [iq|%|] `shouldBe` "%"
@@ -63,8 +81,38 @@ formatSpec = do
 
     describe "splice interpolation" $
         it "interpolates a splice" $
-            let x = 5 in $(isS "%{x}") `shouldBe` "5"
+            let x = 5 :: Int in $(isS "%{x}") `shouldBe` "5"
+    
+    describe "'is' generic interpolation" $ do
+        it "to string" $
+            $(is "") `shouldBe` ("" :: String)
+        it "to Text" $
+            $(is "") `shouldBe` ("" :: T.Text)
+        it "to lazy Text" $ 
+            $(is "") `shouldBe` ("" :: L.Text)
+    
+    let x = 5 :: Int
 
+    describe "'isS' interpolation to String" $ do
+        it "calls show on Int" $
+            $(isS "%{x}") `shouldBe` "5"
+        it "calls showStr if available" $
+            $(isS "%{G}") `shouldBe` "showStr"
+        it "does not change Text" $
+            $(isS "%{\"str\" :: T.Text}") `shouldBe` "str"
 
-main :: IO ()
-main = hspec formatSpec
+    describe "'isT' interpolation to Text" $ do
+        it "calls show on Int" $
+            $(isT "%{x}") `shouldBe` "5"
+        it "calls showT if available" $
+            $(isT "%{G}") `shouldBe` "showT"
+        it "does not change Text" $
+            $(isT "%{\"str\" :: T.Text}") `shouldBe` "str"
+
+    describe "'isL' interpolation to lazy Text" $ do
+        it "calls show on Int" $
+            $(isL "%{x}") `shouldBe` "5"
+        it "calls showStr if available" $
+            $(isL "%{G}") `shouldBe` "showL"
+        it "does not change Text" $
+            $(isL "%{\"str\" :: T.Text}") `shouldBe` "str"
