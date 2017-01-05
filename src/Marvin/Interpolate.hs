@@ -36,17 +36,40 @@ type Parsed = [Either String String]
 escapeChar :: Char
 escapeChar = '~'
 
+type ParseM = Parsec String Int
 
-parser :: Parsec String () Parsed
+
+parser :: ParseM Parsed
 parser = manyTill (parseInterpolation <|> parseString) eof
 
-parseString :: Parsec String () (Either String String)
+parseString :: ParseM (Either String String)
 parseString = Right <$> parseTillEscape "%{" True
 
-parseInterpolation :: Parsec String () (Either String String)
-parseInterpolation = Left <$> between (try $ string "%{") (char '}') (parseTillEscape "}" False)
+parseInterpolation :: ParseM (Either String String)
+parseInterpolation = between (try $ string "%{") (char '}') (Left <$> parseExpr)
+  where
+    parseExpr = do
+        chunk <- many $ noneOf ['}', '\"', '\'', '{']
+        rest <- (eof >> return "")
+                <|> (char >>= continue)
+        
+        return $ chunk ++ rest
+    continue '{' = modify succ >> parseExpr
+    continue '}' = do
+        s <- get
+        unless (s > 0) $ fail "Unmatched delimiter '}'"
+        put $ succ s
+        parseExpr
+    continue '\"' = do
+        chunk <- many $ noneOf ['\\', '\"']
+        rest <- (eof >> fail "eof in string literal")
+                <|> (char >>= continueString)
+      where
+        continueString '\\'
 
-parseTillEscape :: String -> Bool -> Parsec String () String
+    continue 
+
+parseTillEscape :: String -> Bool -> ParseM String
 parseTillEscape endSeq@(endChar:_) allowEOF = do
     chunk <- many $ noneOf [escapeChar, endChar]
     rest <- eofEND
@@ -103,7 +126,7 @@ interpolateInto converter str =
     foldl f (LitE (StringL "")) interleaved
 
   where
-    parsed = either (error . show) id $ parse parser "inline" str
+    parsed = either (error . show) id $ runParser parser 0 "inline" str
     interleaved = evalExprs parsed
 
     f expr bit = AppE (VarE 'mappend) expr `AppE` bitExpr
