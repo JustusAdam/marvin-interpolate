@@ -15,7 +15,7 @@ The library uses the builtin Haskell compiler extension in the form of *QuasiQuo
 
 import Marvin.Interpolate
 
-myStr = [iq|some string %{show $ map succ [1,2,3]} and data |]
+myStr = [iq|some string #{show $ map succ [1,2,3]} and data |]
 -- "some string [2,3,4] and data"
 ```
 
@@ -26,7 +26,7 @@ or alternatively as splice (which might be kinder to your code highlighting)
 
 import Marvin.Interpolate
 
-myStr = $(is "some string %{show $ map succ [1,2,3]} and data")
+myStr = $(is "some string #{show $ map succ [1,2,3]} and data")
 -- "some string [2,3,4] and data"
 ```
 
