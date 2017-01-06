@@ -1,5 +1,5 @@
 name:                marvin-interpolate
-version:             0.3.0
+version:             0.4.0
 synopsis:            Compile time string interpolation a la Scala and CoffeeScript
 description:         The official documentation can be found on readthedocs <https://marvin.readthedocs.io/en/latest/interpolation.html>
 homepage:            http://marvin.readthedocs.io/en/latest/interpolation.html

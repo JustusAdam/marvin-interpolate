@@ -15,6 +15,7 @@ module Marvin.Interpolate
   , iq
   -- * Internals/extension points
   , interpolateInto
+  , parser
   ) where
 
 
@@ -43,55 +44,47 @@ parser :: ParseM Parsed
 parser = manyTill (parseInterpolation <|> parseString) eof
 
 parseString :: ParseM (Either String String)
-parseString = Right <$> parseTillEscape "%{" True
+parseString = do
+    chunk <- many $ noneOf ['#']
+    fmap (Right . (chunk ++)) $ (eof >> return "") <|> (lookAhead (try (char '#' >> anyChar)) >>= endOrEscape) <|> fmap return anyChar
+  where
+    endOrEscape :: Char -> ParseM String
+    endOrEscape '{' = return ""
+    endOrEscape '#' = count 2 anyChar >> return "#"
+    endOrEscape ']' = count 2 anyChar >> return "]"
+    endOrEscape _ = fail ""
+
 
 parseInterpolation :: ParseM (Either String String)
-parseInterpolation = between (try $ string "%{") (char '}') (Left <$> parseExpr)
+parseInterpolation = (try $ string "#{") >> (Left <$> parseExpr)
   where
     parseExpr = do
-        chunk <- many $ noneOf ['}', '\"', '\'', '{']
-        rest <- (eof >> return "")
-                <|> (char >>= continue)
-        
-        return $ chunk ++ rest
-    continue '{' = modify succ >> parseExpr
+        chunk <- many $ noneOf ['}', '"', '\'', '{']
+        fmap (chunk ++) $ (eof >> error "eof in interpolation") <|> (anyChar >>= continue)
+
+    continue :: Char -> ParseM String
+    continue '{' = modifyState succ >> fmap ('{':) parseExpr
     continue '}' = do
-        s <- get
-        unless (s > 0) $ fail "Unmatched delimiter '}'"
-        put $ succ s
-        parseExpr
-    continue '\"' = do
-        chunk <- many $ noneOf ['\\', '\"']
-        rest <- (eof >> fail "eof in string literal")
-                <|> (char >>= continueString)
-      where
-        continueString '\\'
+        s <- getState
+        if s == 0
+          then return ""
+          else ('}':) <$> (modifyState succ >> parseExpr)
+    continue '\"' = ('"':) <$> parseStr
+    continue '\'' = do
+        char '\''
+        inner <- ((:) <$> char '\\' <*> fmap return anyChar) <|> fmap return anyChar
+        char '\''
+        return $ '\'':inner ++ "'"
 
-    continue 
-
-parseTillEscape :: String -> Bool -> ParseM String
-parseTillEscape endSeq@(endChar:_) allowEOF = do
-    chunk <- many $ noneOf [escapeChar, endChar]
-    rest <- eofEND
-              <|> (char escapeChar >> parseEscaped)
-              <|> (lookAhead (try $ string endSeq) >> return "")
-              <|> (return <$> char endChar)
-    return $ chunk <> rest
-  where
-    eofEND
-        | allowEOF = eof >> return "" -- <|> (try (char escapeChar >> eof) >> char escapeChar >> return [escapeChar])
-        | otherwise = fail "EOF not allowed in interpolation"
-
-    parseEscaped = (eof >> return [escapeChar]) <|> do
-        next <- anyChar
-        let escaped
-                | next == escapeChar = [escapeChar]
-                | next == '%' = "%"
-                | next == ']' = "]"
-                | next == '}' = "}"
-                | otherwise = escapeChar : [next]
-        rest <- parseTillEscape endSeq allowEOF
-        return $ escaped <> rest
+    parseStr = do
+        chunk <- many $ noneOf ['"', '\\']
+        fmap (chunk ++) $ (eof >>= fail "eof in string literal") 
+                          <|> (anyChar >>= continueStr)
+      where 
+        continueStr '"' = ('"':) <$> parseExpr
+        continueStr '\\' = do
+            escaped <- anyChar
+            (\a -> '\\':escaped:a) <$> parseStr
 
 
 evalExprs :: Parsed -> [Either Exp String]

@@ -28,26 +28,14 @@ instance ShowL G where
 main :: IO ()
 main = hspec $ do
     describe "parsing to itself" $ do
-        it "%" $
-            [iq|%|] `shouldBe` "%"
-        it "%anything" $
-            [iq|%anything|] `shouldBe` "%anything"
-        it "~" $
-            [iq|~|] `shouldBe` "~"
-        it "~anything" $
-            $(is "~anything") `shouldBe` "~anything"
+        it "#" $
+            [iq|#|] `shouldBe` "#"
+        it "#anything" $
+            [iq|#anything|] `shouldBe` "#anything"
 
-    describe "parsing escape sequences" $ do
-        it "parses ~% as %" $
-            [iq|~%|] `shouldBe` "%"
-        it "parses ~] as ]" $
-            [iq|~]|] `shouldBe` "]"
-        it "parses ~%{} as %{}" $
-            [iq|~%{}|] `shouldBe` "%{}"
-        it "parses |~] as |]" $
-            [iq||~]|] `shouldBe` "|]"
-        it "parses ~~ as ~" $
-            [iq|~~|] `shouldBe` "~"
+    describe "parsing escape sequences" $
+        it "parses ## as #" $
+            [iq|##|] `shouldBe` "#"
 
     describe "interpolation substitution" $ do
         it "leaves an empty string" $
@@ -56,32 +44,32 @@ main = hspec $ do
             [iq|this is not changed|] `shouldBe` "this is not changed"
         it "interpolates just an external variable" $
             let y = "str" in
-                [iq|%{y}|] `shouldBe` y
+                [iq|#{y}|] `shouldBe` y
         it "interpolates an external variable" $
-            let y = "str2" in [iq| hello you %{y} end|] `shouldBe` " hello you " ++ y ++ " end"
+            let y = "str2" in [iq| hello you #{y} end|] `shouldBe` " hello you " ++ y ++ " end"
         it "interpolates the variable x (used to be special)" $
-            let x = "str" in [iq| hello x: %{x}|] `shouldBe` " hello x: " ++ x
+            let x = "str" in [iq| hello x: #{x}|] `shouldBe` " hello x: " ++ x
         it "interpolates infix with $" $
-            [iq|str %{show $ 4 + (5 :: Int)} str|] `shouldBe` "str 9 str"
+            [iq|str #{show $ 4 + (5 :: Int)} str|] `shouldBe` "str 9 str"
         it "interpolates multiple bindings" $
             let
                 x = "multiple"
                 y = "can"
                 z = "local scope"
-            in [iq|We %{y} interpolate %{x} bindings from %{z}|]
+            in [iq|We #{y} interpolate #{x} bindings from #{z}|]
                 `shouldBe` "We can interpolate multiple bindings from local scope"
 
         it "interpolates complex expressions" $
             let
                 x = ["haskell", "expression"]
                 y = " can be"
-            in [iq|Any %{intercalate " " x ++ y} interpolated|]
+            in [iq|Any #{intercalate " " x ++ y} interpolated|]
                  `shouldBe` "Any haskell expression can be interpolated"
 
 
     describe "splice interpolation" $
         it "interpolates a splice" $
-            let x = 5 :: Int in $(isS "%{x}") `shouldBe` "5"
+            let x = 5 :: Int in $(isS "#{x}") `shouldBe` "5"
     
     describe "'is' generic interpolation" $ do
         it "to string" $
@@ -95,24 +83,24 @@ main = hspec $ do
 
     describe "'isS' interpolation to String" $ do
         it "calls show on Int" $
-            $(isS "%{x}") `shouldBe` "5"
+            $(isS "#{x}") `shouldBe` "5"
         it "calls showStr if available" $
-            $(isS "%{G}") `shouldBe` "showStr"
+            $(isS "#{G}") `shouldBe` "showStr"
         it "does not change Text" $
-            $(isS "%{\"str\" :: T.Text}") `shouldBe` "str"
+            $(isS "#{\"str\" :: T.Text}") `shouldBe` "str"
 
     describe "'isT' interpolation to Text" $ do
         it "calls show on Int" $
-            $(isT "%{x}") `shouldBe` "5"
+            $(isT "#{x}") `shouldBe` "5"
         it "calls showT if available" $
-            $(isT "%{G}") `shouldBe` "showT"
+            $(isT "#{G}") `shouldBe` "showT"
         it "does not change Text" $
-            $(isT "%{\"str\" :: T.Text}") `shouldBe` "str"
+            $(isT "#{\"str\" :: T.Text}") `shouldBe` "str"
 
     describe "'isL' interpolation to lazy Text" $ do
         it "calls show on Int" $
-            $(isL "%{x}") `shouldBe` "5"
+            $(isL "#{x}") `shouldBe` "5"
         it "calls showStr if available" $
-            $(isL "%{G}") `shouldBe` "showL"
+            $(isL "#{G}") `shouldBe` "showL"
         it "does not change Text" $
-            $(isL "%{\"str\" :: T.Text}") `shouldBe` "str"
+            $(isL "#{\"str\" :: T.Text}") `shouldBe` "str"

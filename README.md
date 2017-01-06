@@ -30,7 +30,7 @@ myStr = $(is "some string %{show $ map succ [1,2,3]} and data")
 -- "some string [2,3,4] and data"
 ```
 
-It basically transforms the interpolated string  `[iq|interpolated string|]`, or in splices `$(is "interpolated string")` into a concatenation of all string bits and the expressions in `%{}`.
+It basically transforms the interpolated string  `[iq|interpolated string|]`, or in splices `$(is "interpolated string")` into a concatenation of all string bits and the expressions in `#{}`.
 Therefore it is not limited to `String` alone, rather it produces a literal at compile time, which can either be interpreted as `String` or, using the [`OverloadedStrings`](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#overloaded-string-literals) extension, as `Text` or `ByteString` or any other string type.
 
 `i` (for *interpolate quoter*) and `is` (for *interpolate splice*) is the basic interpolator, which inserts the expressions verbatim. Hence when using `iq` or `is` all expressions must return the desired string type.
@@ -53,28 +53,23 @@ To import all interpolators, import `Marvin.Interpolate.All`.
 Interpolation uses the quasi quoter sytax, which starts with `[interpolator_name|` and ends with `|]` or splice syntax `$(interpolator "interpolated string")`.
 Anything in between is interpreted by the library.
 
-The format string in between uses the syntax `%{expression}`.
+The format string in between uses the syntax `#{expression}`.
 Any valid Haskell expression can be used inside the braces.
 And all names which are in scope can be used, like so.
 
 ```haskell
-let x = 5 in [iS|x equals %{x}|] -- > "x equals 5"
+let x = 5 in [iS|x equals #{x}|] -- > "x equals 5"
 ```
 
-There are four escape sequences to allow literal `%{` and `|]`
+There are four escape sequences to allow literal `#{` and `|]`
 
 | Input | Output |
 |-------|--------|
-| `~]`  | `]`    |
-| `~%`  | `%`    |
-| `~}`  | `}`    | 
-| `~~`  | `~`    |
+| `#]`  | `]`    |
+| `##`  | `#`    |
 
 
-As a result the sequence `~%{` will show up as a literal `%{` in the output and `|~]` results in a literal `|]`.
-Note that these are simple substitutions. 
-In general the characters themselves, if not escaped, will not throw errors, aka `~` will be `~` again in the output.
-Escaping is only necessary in cases where these cahracters would have a special meaning otherwise.
+As a result the sequence `##{` will show up as a literal `#{` in the output and `|#]` results in a literal `|]`.
 
 
 ## Differences to/Advantages over other libraries
