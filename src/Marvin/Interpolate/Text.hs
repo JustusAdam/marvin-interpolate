@@ -9,10 +9,6 @@ Portability : POSIX
 
 Please refer to the documentation at https://marvin.readthedocs.io/en/latest/interpolation.html for examples and explanations on how to use this library.
 -}
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE OverloadedStrings    #-}
-{-# LANGUAGE TemplateHaskell      #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Marvin.Interpolate.Text 
     ( isT, iqT
     -- * Conversion class
