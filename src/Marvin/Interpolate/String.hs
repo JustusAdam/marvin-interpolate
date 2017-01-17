@@ -42,6 +42,9 @@ instance ShowStr Char where
     showStr = show
     showListStr = id
 
+instance ShowStr a => ShowStr [a] where
+    showStr = showListStr
+
 instance ShowStr T.Text where
     showStr = T.unpack
 

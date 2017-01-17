@@ -37,6 +37,9 @@ class ShowL a where
     showListL :: [a] -> L.Text
     showListL l = "[" <> L.intercalate ", " (map showL l) <> "]"
 
+instance ShowL a => ShowL [a] where
+    showL = showListL
+
 instance ShowL L.Text where
     showL = id
 

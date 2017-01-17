@@ -88,6 +88,8 @@ main = hspec $ do
             $(isS "#{G}") `shouldBe` "showStr"
         it "does not change Text" $
             $(isS "#{\"str\" :: T.Text}") `shouldBe` "str"
+        it "does not change String" $
+            $(isS "#{\"str\" :: String}") `shouldBe` "str"
 
     describe "'isT' interpolation to Text" $ do
         it "calls show on Int" $
@@ -96,6 +98,8 @@ main = hspec $ do
             $(isT "#{G}") `shouldBe` "showT"
         it "does not change Text" $
             $(isT "#{\"str\" :: T.Text}") `shouldBe` "str"
+        it "does not change String" $
+            $(isT "#{\"str\" :: String}") `shouldBe` "str"
 
     describe "'isL' interpolation to lazy Text" $ do
         it "calls show on Int" $
@@ -104,3 +108,5 @@ main = hspec $ do
             $(isL "#{G}") `shouldBe` "showL"
         it "does not change Text" $
             $(isL "#{\"str\" :: T.Text}") `shouldBe` "str"
+        it "does not change String" $
+            $(isL "#{\"str\" :: String}") `shouldBe` "str"

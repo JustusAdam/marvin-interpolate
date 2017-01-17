@@ -37,6 +37,9 @@ class ShowT a where
     showListT :: [a] -> Text
     showListT l = "[" <> intercalate ", " (map showT l) <> "]"
 
+instance ShowT a => ShowT [a] where
+    showT = showListT
+
 instance ShowT Text where
     showT = id
 
