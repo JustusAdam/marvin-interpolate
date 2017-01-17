@@ -53,7 +53,7 @@ instance {-# OVERLAPPABLE #-} Show a => ShowL a where
 
 -- | __i__nterpolate __s__plice to __L__azy Text
 --
--- Template Haskell splice function, used like @$(isLT "my str %{expr}")@
+-- Template Haskell splice function, used like @$(isL "my str #{expr}")@
 -- 
 -- converts all expressions to 'L.Text' by calling 'showL' on the result.
 isL :: String -> Q Exp
@@ -62,7 +62,7 @@ isL = return . interpolateInto (VarE 'showL)
 
 -- | __i__nterpolate __q__uoter to __L__azy Text
 --
--- QuasiQuoter, used like @[iLT|my str %{expr}|]@
+-- QuasiQuoter, used like @[iqL|my str #{expr}|]@
 --
 -- converts all expressions to 'L.Text' by calling 'showL' on the result.
 iqL :: QuasiQuoter

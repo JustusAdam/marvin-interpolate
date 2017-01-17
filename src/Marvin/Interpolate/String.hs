@@ -54,7 +54,7 @@ instance {-# OVERLAPPABLE #-} Show a => ShowStr a where
 
 -- | __i__nterpolate __s__plice to __S__tring
 --
--- Template Haskell splice function, used like @$(isS "my str %{expr}")@
+-- Template Haskell splice function, used like @$(isS "my str #{expr}")@
 -- 
 -- converts all expressions to 'String' by calling 'showStr' on the result.
 isS :: String -> Q Exp
@@ -63,7 +63,7 @@ isS = return . interpolateInto (VarE 'showStr)
 
 -- | __i__nterpolate __q__uoter to __S__tring
 --
--- QuasiQuoter, used like @[iS|my str %{expr}|]@
+-- QuasiQuoter, used like @[iqS|my str #{expr}|]@
 --
 -- converts all expressions to 'String' by calling 'showStr' on the result.
 iqS :: QuasiQuoter

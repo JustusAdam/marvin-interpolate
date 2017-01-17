@@ -15,7 +15,6 @@ module Marvin.Interpolate
   , iq
   -- * Internals/extension points
   , interpolateInto
-  , parser
   ) where
 
 
@@ -45,7 +44,7 @@ parser = manyTill (parseInterpolation <|> parseString) eof
 
 parseString :: ParseM (Either String String)
 parseString = do
-    chunk <- many $ noneOf ['#']
+    chunk <- many $ satisfy (/= '#')
     fmap (Right . (chunk ++)) $ (eof >> return "") <|> (lookAhead (try (char '#' >> anyChar)) >>= endOrEscape) <|> fmap return anyChar
   where
     endOrEscape :: Char -> ParseM String
@@ -56,7 +55,7 @@ parseString = do
 
 
 parseInterpolation :: ParseM (Either String String)
-parseInterpolation = (try $ string "#{") >> (Left <$> parseExpr)
+parseInterpolation = try (string "#{") >> (Left <$> parseExpr)
   where
     parseExpr = do
         chunk <- many $ noneOf ['}', '"', '\'', '{']
@@ -130,7 +129,7 @@ interpolateInto converter str =
 
 -- | __i__nterpolate __s__plice 
 --
--- Template Haskell splice function, used like @$(is "my str %{expr}")@
+-- Template Haskell splice function, used like @$(is "my str #{expr}")@
 -- 
 -- Performs no conversion on interpolated expressions like @expr@.
 is :: String -> Q Exp
@@ -139,7 +138,7 @@ is = return . interpolateInto (VarE 'id)
 
 -- | __i__nterpolate __q__uoter
 --
--- QuasiQuoter, used like @[i|my str %{expr}|]@
+-- QuasiQuoter, used like @[iq|my str #{expr}|]@
 --
 -- Performs no conversion on interpolated expressions like @expr@.
 iq :: QuasiQuoter
