@@ -16,7 +16,7 @@ Please refer to the documentation at https://marvin.readthedocs.io/en/latest/int
 module Marvin.Interpolate.Text 
     ( isT, iqT
     -- * Conversion class
-    , ShowT(..)
+    , ShowT(showT)
     ) where
 
 
@@ -36,6 +36,8 @@ class ShowT a where
     showT :: a -> Text
     showListT :: [a] -> Text
     showListT l = "[" <> intercalate ", " (map showT l) <> "]"
+
+    {-# MINIMAL showT #-}
 
 instance ShowT a => ShowT [a] where
     showT = showListT

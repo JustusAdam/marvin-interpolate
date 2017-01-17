@@ -16,7 +16,7 @@ Please refer to the documentation at https://marvin.readthedocs.io/en/latest/int
 module Marvin.Interpolate.Text.Lazy
     ( isL, iqL
     -- * Conversion class
-    , ShowL(..)
+    , ShowL(showL)
     ) where
 
 
@@ -36,6 +36,8 @@ class ShowL a where
     showL :: a -> L.Text
     showListL :: [a] -> L.Text
     showListL l = "[" <> L.intercalate ", " (map showL l) <> "]"
+
+    {-# MINIMAL showL #-}
 
 instance ShowL a => ShowL [a] where
     showL = showListL

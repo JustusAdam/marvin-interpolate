@@ -16,7 +16,7 @@ Please refer to the documentation at https://marvin.readthedocs.io/en/latest/int
 module Marvin.Interpolate.String
     ( isS, iqS
     -- * Conversion class
-    , ShowStr(..)
+    , ShowStr(showStr)
     ) where
 
 
@@ -37,6 +37,8 @@ class ShowStr a where
     showStr :: a -> String
     showListStr :: [a] -> String
     showListStr l = "[" <> intercalate ", " (map showStr l) <> "]"
+
+    {-# MINIMAL showStr #-}
 
 instance ShowStr Char where
     showStr = show
