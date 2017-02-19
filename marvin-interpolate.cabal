@@ -1,14 +1,15 @@
 name:                marvin-interpolate
 version:             1.1
 synopsis:            Compile time string interpolation a la Scala and CoffeeScript
-description:         The official documentation can be found on readthedocs <https://marvin.readthedocs.io/en/latest/interpolation.html>
+description:         The documentation can be found on readthedocs <https://marvin.readthedocs.io/en/latest/interpolation.html>
 homepage:            http://marvin.readthedocs.io/en/latest/interpolation.html
 license:             BSD3
 license-file:        LICENSE
 author:              JustusAdam
 maintainer:          dev@justus.science
-copyright:           Copyright: (c) 2016 Justus Adam
+copyright:           © 2016, 2017 Justus Adam
 category:            Text
+stability:           provisional
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
