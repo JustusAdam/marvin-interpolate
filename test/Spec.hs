@@ -32,6 +32,13 @@ main = hspec $ do
             [iq|#|] `shouldBe` "#"
         it "#anything" $
             [iq|#anything|] `shouldBe` "#anything"
+    
+    describe "general parsing" $ do
+        it "allows primes in at the end of binding names" $
+            let x' = "str" in [iq|Hello #{x'}|] `shouldBe` "Hello str"
+        it "allows primes in the middle of binding names" $
+            let isn't = 5 :: Int in $(isS "Hello #{isn't}") `shouldBe` "Hello 5"
+        
 
     describe "parsing escape sequences" $
         it "parses ## as #" $

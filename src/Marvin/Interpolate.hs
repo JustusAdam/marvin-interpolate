@@ -69,7 +69,9 @@ parseInterpolation = try (string "#{") >> (Left <$> parseExpr)
           then return ""
           else ('}':) <$> (modifyState succ >> parseExpr)
     continue '\"' = ('"':) <$> parseStr
-    continue '\'' = do
+    continue '\'' = parseChar <|> (('\'':) <$> parseExpr)
+      
+    parseChar = do
         char '\''
         inner <- ((:) <$> char '\\' <*> fmap return anyChar) <|> fmap return anyChar
         char '\''
