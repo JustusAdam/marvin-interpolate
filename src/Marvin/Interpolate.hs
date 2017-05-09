@@ -24,7 +24,7 @@ import           Control.Monad.State                 as S
 import           Data.Either
 import           Data.List                           (intercalate)
 import           Data.Monoid
-#if __GLASGOW_HASKELL__ <= 740
+#if __GLASGOW_HASKELL__ < 704
 import           Language.Haskell.Meta.Parse.Careful
 #else
 import           Language.Haskell.Meta.Parse
