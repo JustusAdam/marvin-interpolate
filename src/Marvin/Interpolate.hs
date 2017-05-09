@@ -10,6 +10,7 @@ Portability : POSIX
 Please refer to the documentation at https://marvin.readthedocs.io/en/latest/interpolation.html for examples and explanations on how to use this library.
 -}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP #-}
 module Marvin.Interpolate
   ( is
   , iq
@@ -23,7 +24,11 @@ import           Control.Monad.State                 as S
 import           Data.Either
 import           Data.List                           (intercalate)
 import           Data.Monoid
+#if __GLASGOW_HASKELL__ <= 740
 import           Language.Haskell.Meta.Parse.Careful
+#else
+import           Language.Haskell.Meta.Parse
+#endif
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Quote
 import           Text.Parsec
