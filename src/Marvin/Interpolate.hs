@@ -9,8 +9,7 @@ Portability : POSIX
 
 Please refer to the documentation at https://marvin.readthedocs.io/en/latest/interpolation.html for examples and explanations on how to use this library.
 -}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE TemplateHaskell, CPP, LambdaCase #-}
 module Marvin.Interpolate
   ( is
   , iq
@@ -21,9 +20,11 @@ module Marvin.Interpolate
 
 import           Control.Monad
 import           Control.Monad.State                 as S
+import           Control.Monad.Writer                as W
 import           Data.Either
 import           Data.List                           (intercalate)
 import           Data.Monoid
+import Data.Traversable (for)
 #if __GLASGOW_HASKELL__ < 704
 import           Language.Haskell.Meta.Parse.Careful
 #else
@@ -75,7 +76,7 @@ parseInterpolation = try (string "#{") >> (Left <$> parseExpr)
           else ('}':) <$> (modifyState succ >> parseExpr)
     continue '\"' = ('"':) <$> parseStr
     continue '\'' = parseChar <|> (('\'':) <$> parseExpr)
-      
+
     parseChar = do
         char '\''
         inner <- ((:) <$> char '\\' <*> fmap return anyChar) <|> fmap return anyChar
@@ -84,9 +85,9 @@ parseInterpolation = try (string "#{") >> (Left <$> parseExpr)
 
     parseStr = do
         chunk <- many $ noneOf ['"', '\\']
-        fmap (chunk ++) $ (eof >>= fail "eof in string literal") 
+        fmap (chunk ++) $ (eof >>= fail "eof in string literal")
                           <|> (anyChar >>= continueStr)
-      where 
+      where
         continueStr '"' = ('"':) <$> parseExpr
         continueStr '\\' = do
             escaped <- anyChar
@@ -94,29 +95,32 @@ parseInterpolation = try (string "#{") >> (Left <$> parseExpr)
 
 
 evalExprs :: Parsed -> [Either Exp String]
-evalExprs l = evalState (mapM stitch l) decls
+evalExprs l
+    | null errs = vals
+    | otherwise =
+        error $
+        intercalate "\n" $
+        errs >>= \(exp, err) ->
+            ["Error:", err, "In interpolated expression:", exp]
   where
-    strDecls = lefts l
-    decls = case partitionEithers $ map parseExp strDecls of
-                ([], d) -> d
-                (errs, _) -> error $ intercalate "\n" errs
-
-    stitch :: Either a b -> S.State [c] (Either c b)
-    stitch (Right str) = return $ Right str
-    stitch (Left _) = do
-        (name:rest) <- get
-        put rest
-        return $ Left name
+    (vals, errs) =
+        runWriter $
+        for l $ \case
+            Right str -> pure $ Right str
+            Left exprStr ->
+                case parseExp exprStr of
+                    Right exp -> pure $ Left exp
+                    Left err -> tell [(exprStr, err)] >> pure (error err)
 
 
 -- | Common core of all interpolators.
 --
--- @interpolateInto exp str@ parses @str@ as the interpolated string and returns an 'Exp' which looks like 
--- 
+-- @interpolateInto exp str@ parses @str@ as the interpolated string and returns an 'Exp' which looks like
+--
 -- @
 --    "str" \`mappend\` exp1 \`mappend\` "str" \`mappend\` exp2 \`mappend\` "str"
--- @ 
--- 
+-- @
+--
 -- where @exp1@ and @exp2@ are the interpolated expressions with @exp@ prepended.
 -- The intended use of @exp@ is to unifomly convert the interpolated expressions into a desired string type.
 -- Typically @exp@ will be something like @('VarE' \'convert)@ were @convert@ is some member function of a conversion type class.
@@ -132,12 +136,12 @@ interpolateInto converter str =
       where
         bitExpr = case bit of
                       Right str -> LitE (StringL str)
-                      Left expr2 -> AppE converter expr2
+                      Left expr2 -> AppE converter $ ParensE expr2
 
--- | __i__nterpolate __s__plice 
+-- | __i__nterpolate __s__plice
 --
 -- Template Haskell splice function, used like @$(is "my str #{expr}")@
--- 
+--
 -- Performs no conversion on interpolated expressions like @expr@.
 is :: String -> Q Exp
 is = return . interpolateInto (VarE 'id)
