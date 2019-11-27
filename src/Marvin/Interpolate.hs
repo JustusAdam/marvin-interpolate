@@ -104,10 +104,12 @@ evalExprs l = evalState (mapM stitch l) decls
     stitch :: Either a b -> S.State [c] (Either c b)
     stitch (Right str) = return $ Right str
     stitch (Left _) = do
-        (name:rest) <- get
-        put rest
-        return $ Left name
-
+        crs <- get
+        case crs of
+          [] -> error "This should never happen."
+          (name:rest) -> do
+            put rest
+            return $ Left name
 
 -- | Common core of all interpolators.
 --
