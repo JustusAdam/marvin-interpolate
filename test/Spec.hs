@@ -8,6 +8,7 @@ import           Marvin.Interpolate.All
 import           Test.Hspec
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as L
+import Control.Lens
 
 
 data G = G
@@ -24,6 +25,7 @@ instance ShowT G where
 instance ShowL G where
     showL _ = "showL"
 
+newtype PutIt a = PutIt { getIt :: a }
 
 main :: IO ()
 main = hspec $ do
@@ -32,13 +34,13 @@ main = hspec $ do
             [iq|#|] `shouldBe` ("#" :: String)
         it "#anything" $
             [iq|#anything|] `shouldBe` ("#anything" :: String)
-    
+
     describe "general parsing" $ do
         it "allows primes in at the end of binding names" $
             let x' = "str" in [iq|Hello #{x'}|] `shouldBe` ("Hello str" :: String)
         it "allows primes in the middle of binding names" $
             let isn't = 5 :: Int in $(isS "Hello #{isn't}") `shouldBe` "Hello 5"
-        
+
 
     describe "parsing escape sequences" $
         it "parses ## as #" $
@@ -77,15 +79,15 @@ main = hspec $ do
     describe "splice interpolation" $
         it "interpolates a splice" $
             let x = 5 :: Int in $(isS "#{x}") `shouldBe` "5"
-    
+
     describe "'is' generic interpolation" $ do
         it "to string" $
             $(is "") `shouldBe` ("" :: String)
         it "to Text" $
             $(is "") `shouldBe` ("" :: T.Text)
-        it "to lazy Text" $ 
+        it "to lazy Text" $
             $(is "") `shouldBe` ("" :: L.Text)
-    
+
     let x = 5 :: Int
 
     describe "'isS' interpolation to String" $ do
@@ -117,3 +119,11 @@ main = hspec $ do
             $(isL "#{\"str\" :: T.Text}") `shouldBe` "str"
         it "does not change String" $
             $(isL "#{\"str\" :: String}") `shouldBe` "str"
+
+    describe "Test cases for bugs" $ do
+        let field = lens getIt $ const PutIt
+            obj = PutIt (-5) :: PutIt Int
+        it "interpolates infix expressions" $ do
+            $(isT "something - #{obj^.field}") `shouldBe` "something - -5"
+            -- Failing test case in compile time code
+            --  $(isT "something - #{obj^.field . base 2}") `shouldBe` "something - -5"

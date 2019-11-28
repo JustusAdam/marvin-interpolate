@@ -136,7 +136,7 @@ interpolateInto converter str =
       where
         bitExpr = case bit of
                       Right str -> LitE (StringL str)
-                      Left expr2 -> AppE converter $ ParensE expr2
+                      Left expr2 -> AppE converter expr2
 
 -- | __i__nterpolate __s__plice
 --
