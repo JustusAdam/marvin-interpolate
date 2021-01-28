@@ -85,7 +85,7 @@ parseInterpolation = try (string "#{") >> (Left <$> parseExpr)
 
     parseStr = do
         chunk <- many $ noneOf ['"', '\\']
-        fmap (chunk ++) $ (eof >>= fail "eof in string literal")
+        fmap (chunk ++) $ (eof >> fail "eof in string literal")
                           <|> (anyChar >>= continueStr)
       where
         continueStr '"' = ('"':) <$> parseExpr
